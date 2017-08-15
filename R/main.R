@@ -22,12 +22,24 @@ ext_tracks <- read_fwf(file.path("~", "R projects", "hurricane_geom", "data", "e
 ext_tracks %>% 
   select(storm_name, month, day, hour, year, latitude, longitude, starts_with("radius")) %>% 
   gather(sector_speed, radii, starts_with("radius"), na.rm = TRUE) %>% 
+  separate(sector_speed, c("dumb", "wind_speed", "sector")) %>% 
   transmute(storm_id = paste(stringr::str_to_title(storm_name), year, sep = "-"), 
             date = ymd_h(paste(year, month, day, hour, sep = "-")),
             lattitude = latitude,
-            longitude = longitude, 
-            sector_speed,
+            longitude = -longitude, 
+            wind_speed,
+            sector,
             radii
              ) %>% 
-  separate(sector_speed, c("soeed", "sector"), )
-         
+  spread(sector, radii)
+  #filter(storm_id == "Katrina-2005", date == ymd_hms("2005-08-29 12:00:00"))
+
+#Target results         
+##       storm_id                date latitude longitude wind_speed  ne  nw
+## 1 Katrina-2005 2005-08-29 12:00:00     29.5     -89.6         34 200 100
+## 2 Katrina-2005 2005-08-29 12:00:00     29.5     -89.6         50 120  75
+## 3 Katrina-2005 2005-08-29 12:00:00     29.5     -89.6         64  90  60
+##    se  sw
+## 1 200 150
+## 2 120  75
+## 3  90  60
